@@ -7,6 +7,6 @@ limits:{
 });
 
 const signupimage= multerUpload.single("profilePic");
-
+ 
 const multipleImages = multerUpload.array("productImage", 5);
 export {signupimage,multipleImages};

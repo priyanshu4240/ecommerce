@@ -6,7 +6,7 @@ import SummaryApi from '../common';
 
 
 const AdminPanel = () => {
-    const user = useSelector(state => state?.user?.user)
+    const user = useSelector(state => state?.user?.user) 
     const navigate = useNavigate()
     useEffect(() => {
         const fetchData = async () => {

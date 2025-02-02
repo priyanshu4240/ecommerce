@@ -6,55 +6,32 @@ export default async function userSignInController(req, res) {
     try {
         const { email, password } = req.body;
 
-        // Validate input fields
-        if (!email) {
-            throw new Error("Please provide email");
-        }
-        if (!password) {
-            throw new Error("Please provide password");
+        if (!email || !password) {
+            throw new Error("Please provide email and password");
         }
 
-        // Check if user exists
         const user = await userModel.findOne({ email });
-        if (!user) {
-            throw new Error("User not found");
-        }
+        if (!user) throw new Error("User not found");
 
-        // Compare password
         const checkPassword = await bcrypt.compare(password, user.password);
-        if (checkPassword) {
-            // Create JWT token data
-            const tokenData = {
-                _id: user._id,
-                email: user.email,
-            };
+        if (!checkPassword) throw new Error("Incorrect password");
 
-            // Generate JWT token
-            const token = await jwt.sign(tokenData, process.env.TOKEN_SECRET_KEY, { expiresIn: '8h' });
+        // Create JWT token
+        const token = jwt.sign({ _id: user._id, email: user.email }, process.env.TOKEN_SECRET_KEY, { expiresIn: '8h' });
 
-            // Set cookie options
-            const tokenOption = {
-                httpOnly: true,
-                secure: true,
-            };
+        // Set Cookie Options
+        const tokenOption = {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === "production",
+            sameSite: "None"
+        };
 
-            // Set the cookie and send the response
-            res.cookie("token", token, tokenOption).status(200).json({
-                message: "Login successfully",
-                data: token,
-                success: true,
-                error: false,
-            });
-        } else {
-            throw new Error("Incorrect password");
-        }
+        res.cookie("token", token, tokenOption).status(200).json({
+            message: "Login successful",
+            success: true,
+        });
 
     } catch (err) {
-        // Handle error
-        res.json({
-            message: err.message || err,
-            error: true,
-            success: false,
-        });
+        res.status(400).json({ message: err.message, error: true });
     }
 }
