@@ -1,16 +1,19 @@
 export default async function userLogout(req, res) {
     try {
-        // Clear the authentication token cookie
-        res.clearCookie("token");
+        res.clearCookie("token", {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === "production",
+            sameSite: "None",
+        });
 
-        res.json({
+        return res.status(200).json({
             message: "Logged out successfully",
             error: false,
             success: true,
             data: []
         });
     } catch (err) {
-        res.json({
+        return res.status(500).json({
             message: err.message || err,
             error: true,
             success: false,
